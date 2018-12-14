@@ -13,7 +13,7 @@ const TFL_BASE_URL = 'https://api.tfl.gov.uk';
 export default class ConsoleRunner {
 
     promptForPostcodePromise(){
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             readline.question('\nEnter your postcode: ', function(postcode) {
                 readline.close();
                 resolve(postcode);
@@ -76,7 +76,7 @@ export default class ConsoleRunner {
                     return { naptanId: entity.naptanId, commonName: entity.commonName };
                 }).slice(0, count);
                 resolve(stopPoints);
-            })
+            });
         });
     } 
 
@@ -89,6 +89,8 @@ export default class ConsoleRunner {
             return that.getNearestStopPointsPromise(location.latitude, location.longitude, 5)
         }).then((stopPoints) => {
             that.displayStopPoints(stopPoints);
+        }).catch((err) => {
+            console.log(err)
         });
     }
 }
