@@ -49,18 +49,14 @@ export default class ConsoleRunner {
         });
     }
 
-    getLocationForPostCodePromise(postcode) {
-        return new Promise((resolve, reject) => {
-            this.makeGetRequestPromise(POSTCODES_BASE_URL, `postcodes/${postcode}`, []).then((responseBody) => {
-                const jsonBody = JSON.parse(responseBody);
-                resolve({ latitude: jsonBody.result.latitude, longitude: jsonBody.result.longitude });
-            });
-        });
+    async getLocationForPostCodePromise(postcode) {
+        const responseBody = await this.makeGetRequestPromise(POSTCODES_BASE_URL, `postcodes/${postcode}`, [])
+        const jsonBody = JSON.parse(responseBody);
+        return ({ latitude: jsonBody.result.latitude, longitude: jsonBody.result.longitude });
     }
 
-    getNearestStopPointsPromise(latitude, longitude, count){
-        return new Promise((resolve, reject) => {
-            this.makeGetRequestPromise(
+    async getNearestStopPointsPromise(latitude, longitude, count){
+        const responseBody = await this.makeGetRequestPromise(
                 TFL_BASE_URL, 
                 `StopPoint`, 
                 [
@@ -71,26 +67,22 @@ export default class ConsoleRunner {
                     {name: 'app_id', value: '' /* Enter your app id here */},
                     {name: 'app_key', value: '' /* Enter your app key here */}
                 ]
-            ).then((responseBody) => {
-                const stopPoints = JSON.parse(responseBody).stopPoints.map(function(entity) { 
-                    return { naptanId: entity.naptanId, commonName: entity.commonName };
-                }).slice(0, count);
-                resolve(stopPoints);
-            });
-        });
+            )
+        const stopPoints = JSON.parse(responseBody).stopPoints.map(function(entity) { 
+            return { naptanId: entity.naptanId, commonName: entity.commonName };
+        }).slice(0, count);
+        return stopPoints;
+
     } 
 
-    run() {
-        const that = this;
-        that.promptForPostcodePromise().then((postcode) => {
-            postcode = postcode.replace(/\s/g, '');
-            return that.getLocationForPostCodePromise(postcode)
-        }).then((location) => {
-            return that.getNearestStopPointsPromise(location.latitude, location.longitude, 5)
-        }).then((stopPoints) => {
-            that.displayStopPoints(stopPoints);
-        }).catch((err) => {
-            console.log(err)
-        });
+    async run() {
+        try {
+            const postcode = await this.promptForPostcodePromise()
+            const location = await this.getLocationForPostCodePromise(postcode.replace(/\s/g, ''))
+            const stopPoints = await this.getNearestStopPointsPromise(location.latitude, location.longitude, 5)
+            this.displayStopPoints(stopPoints);
+        }catch(e){
+            console.log(e)
+        }
     }
 }
