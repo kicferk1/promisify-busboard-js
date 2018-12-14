@@ -58,26 +58,6 @@ export default class ConsoleRunner {
         });
     }
 
-    getNearestStopPoints(latitude, longitude, count, callback) {
-        this.makeGetRequestPromise(
-            TFL_BASE_URL,
-            `StopPoint`, 
-            [
-                {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
-                {name: 'lat', value: latitude},
-                {name: 'lon', value: longitude},
-                {name: 'radius', value: 1000},
-                {name: 'app_id', value: '' /* Enter your app id here */},
-                {name: 'app_key', value: '' /* Enter your app key here */}
-            ]).then((responseBody) => {
-                const stopPoints = JSON.parse(responseBody).stopPoints.map(function(entity) { 
-                    return { naptanId: entity.naptanId, commonName: entity.commonName };
-                }).slice(0, count);
-                callback(stopPoints);
-            }
-        );
-    }
-
     getNearestStopPointsPromise(latitude, longitude, count){
         return new Promise((resolve, reject) => {
             this.makeGetRequestPromise(
